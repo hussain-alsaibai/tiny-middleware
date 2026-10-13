@@ -1,0 +1,64 @@
+# tiny-middleware
+
+> Zero-dependency composable middleware chain for Python handlers.
+
+## What it is
+A small Python library for composing sync or async handler callables
+with a list of middleware functions. Pattern is identical to Koa /
+Express: each middleware receives the request and a `next` callable.
+
+## When to use it
+- You have a `tiny-router` app and want cross-cutting middleware (auth,
+  logging, request-id, CORS, rate limiting, etc.).
+- You want one chain that handles both sync and async handlers without
+  hand-rolling the dispatch logic.
+- You want middleware that can short-circuit (e.g. cache, 401, 429).
+
+## Install
+```
+pip install tiny-middleware
+```
+
+## Quick start
+```python
+from tiny_middleware import Chain, Request, Response, request_id, cors
+
+def auth(req, next):
+    if req.header_get("authorization") != "Bearer secret":
+        return Response(401)
+    return next(req)
+
+def hello(req):
+    return Response.json(200, {"hello": "world"})
+
+chain = Chain([request_id(), cors(), auth], handler=hello)
+```
+
+## Public API
+- `Request(method, path, headers, query, body, ctx)` — request envelope.
+  Methods: `header_get(name, default=None)` (case-insensitive).
+- `Response(status, body, headers)` — response envelope. Methods:
+  `with_status(s)`, `with_header(k, v)`. Class methods: `json(s, payload)`,
+  `text(s, payload)`.
+- `Chain(middleware, *, handler)` — middleware list plus final handler.
+  Methods: `use(mw)` (append), `run(req)` (returns Response or awaitable),
+  `__call__(req)`.
+- `request_id(header="x-request-id")` — built-in middleware.
+- `cors(origins=("*",), methods="...")` — built-in middleware.
+
+## Sync / async
+The chain auto-detects per-callable. Mixing sync middleware into an async
+chain runs the sync part in a thread executor and is discouraged. Keep
+chains all-sync or all-async.
+
+## Short-circuit
+A middleware that does not call `next` wins immediately. Useful for
+caching, auth rejection, rate-limit 429, and CORS preflight.
+
+## Order
+The middleware list runs outer-to-inner. `[auth, logging, rate_limit]`
+runs `auth` first; an unauthorized request never reaches `logging` or
+`rate_limit`.
+
+## License
+MIT
