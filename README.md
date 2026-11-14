@@ -11,7 +11,8 @@ fallback, or an auth failure).
 ## Install
 
 ```bash
-pip install tiny-middleware
+# From GitHub (recommended -- not yet on PyPI)
+pip install git+https://github.com/hussain-alsaibai/tiny-middleware.git
 ```
 
 ## Quick start
