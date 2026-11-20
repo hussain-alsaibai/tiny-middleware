@@ -15,8 +15,10 @@ Express: each middleware receives the request and a `next` callable.
 - You want middleware that can short-circuit (e.g. cache, 401, 429).
 
 ## Install
+NOTE: unpublished on PyPI -- the bare name is not on the index, so the `pip install <name>` form 404s. The URL below is the install.
+
 ```
-pip install tiny-middleware
+pip install "tiny-middleware @ git+https://github.com/hussain-alsaibai/tiny-middleware.git"
 ```
 
 ## Quick start
